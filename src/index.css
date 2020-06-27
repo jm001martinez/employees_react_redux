@@ -1,17 +1,16 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-
 
 .inputformcontrol {
   display: block;
@@ -29,9 +28,10 @@ code {
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.inputformcontrol:focus {   
+.inputformcontrol:focus {
   border-color: rgba(0, 123, 255, 0.4);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(0, 123, 255, 0.6);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset,
+    0 0 8px rgba(0, 123, 255, 0.6);
   outline: 0 none;
 }
 
@@ -43,10 +43,20 @@ code {
 a:hover {
   color: "#fff" !important;
   text-decoration: none;
-  
 }
 
 a:hover > svg {
   color: "#fff" !important;
 }
 
+.LoadingComponent {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.LoadingComponent > .ant-spin-container {
+  margin-left: 150px;
+  color: #000;
+}

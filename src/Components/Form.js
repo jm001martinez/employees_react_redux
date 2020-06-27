@@ -14,8 +14,15 @@ import {
 //  REDUX
 import { useDispatch, useSelector } from "react-redux";
 import { validationsFormErrorAction } from "../actions/ValidationsActions";
-import { employeesAddActions } from "../actions/EmployeesListActions";
-import { STATUS_ERROR, STATUS_SUCCESS, UPDATE_MODE_FORM } from "../Constants/Constants";
+import {
+  employeesAddActions,
+  employeeUpdateActions,
+} from "../actions/EmployeesListActions";
+import {
+  STATUS_ERROR,
+  STATUS_SUCCESS,
+  UPDATE_MODE_FORM,
+} from "../Constants/Constants";
 import { openCloseModalAction } from "../actions/ModalActions";
 import { Redirect, useHistory } from "react-router-dom";
 
@@ -38,11 +45,15 @@ export default function FormComponent(props) {
   //  Dispatch
   const dispatch = useDispatch();
 
-  const employeesList = (state) => dispatch(employeesAddActions(state));
-  const validationsFormError = (state) => dispatch(validationsFormErrorAction(state));
+  const employeeCreate = (state) => dispatch(employeesAddActions(state));
+  const employeeUpdate = (state) => dispatch(employeeUpdateActions(state));
+  const validationsFormError = (state) =>
+    dispatch(validationsFormErrorAction(state));
 
   const isError = useSelector((state) => state.validations.state_form_error);
-  const employees = useSelector((state) => state.employees.state_employees_list);
+  const employees = useSelector(
+    (state) => state.employees.state_employees_list
+  );
 
   useEffect(() => {
     if (mode === UPDATE_MODE_FORM) {
@@ -62,20 +73,41 @@ export default function FormComponent(props) {
   const onSave = () => {
     const { name, lastname, email, identification, inss } = formValue;
 
-    const employee = {
-      id: (mode === UPDATE_MODE_FORM) ? employeeEdit.id : getId(),
-      name: name,
-      lastname: lastname,
-      email: email,
-      identification: identification,
-      inss: inss,
-      birthday: getBirthDay(identification),
-      created: (mode === UPDATE_MODE_FORM) ? employeeEdit.created : moment().format("DD/MM/YYYY"),
-    };
-    console.log('\n\nEmpleado a editar:\n', employee )
-    employeesList(employee);
+    if (mode === UPDATE_MODE_FORM) {
+      const data = {
+        id: mode === UPDATE_MODE_FORM ? employeeEdit.id : getId(),
+        name: name,
+        lastname: lastname,
+        email: email,
+        identification: identification,
+        inss: inss,
+        birthday: getBirthDay(identification),
+        created:
+          mode === UPDATE_MODE_FORM
+            ? employeeEdit.created
+            : moment().format("DD/MM/YYYY"),
+      };
+
+      const position = employees.findIndex((employee) => employee.id == id);
+      employees.splice(position, 1, data);
+      employeeUpdate(employees);
+    } else {
+      const employee = {
+        id: getId(),
+        name: name,
+        lastname: lastname,
+        email: email,
+        identification: identification,
+        inss: inss,
+        birthday: getBirthDay(identification),
+        created: moment().format("DD/MM-YYYY"),
+      };
+      console.log("\n\nEmpleado a editar:\n", employee);
+      employeeCreate(employee);
+      history.push("/");
+    }
     history.push("/");
-  }
+  };
 
   const onChange = ($event) => {
     setFormaValue({
@@ -101,7 +133,10 @@ export default function FormComponent(props) {
       setErrorMessage("Todos los campos son obligatorios.", STATUS_ERROR);
     } else {
       if (email == "" || !isValidEmail(email)) {
-        setErrorMessage("Verifique si la dirección de correo es válida.", STATUS_ERROR);
+        setErrorMessage(
+          "Verifique si la dirección de correo es válida.",
+          STATUS_ERROR
+        );
       } else {
         if (!isValidIdentification(identification)) {
           setErrorMessage("Ingrese un número de cédula válido.", STATUS_ERROR);
@@ -120,11 +155,21 @@ export default function FormComponent(props) {
   return (
     <Form className="m-3" onChange={onChange} onSubmit={onSubmit}>
       <Form.Group>
-        <Form.Control type="text" name="name" placeholder="Nombres" value={formValue.name} />
+        <Form.Control
+          type="text"
+          name="name"
+          placeholder="Nombres"
+          value={formValue.name}
+        />
       </Form.Group>
 
       <Form.Group>
-        <Form.Control type="text" name="lastname" placeholder="Apellidos" value={formValue.lastname}/>
+        <Form.Control
+          type="text"
+          name="lastname"
+          placeholder="Apellidos"
+          value={formValue.lastname}
+        />
       </Form.Group>
 
       <Form.Group>

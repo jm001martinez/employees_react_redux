@@ -28,13 +28,13 @@ export default function EmployeesListComponent() {
             {employees.map((employee, index) => (
               <ListGroup.Item key={index}>
                 <Row>
-                  <Col xs={6} md={8}>
+                  <Col xs={8} md={8}>
                     <h5>
                       {employee.name} <small>{employee.lastname}</small>
                     </h5>
                     <small>{employee.email}</small>
                   </Col>
-                  <Col xs={6} md={4}>
+                  <Col xs={4} md={4}>
                     <Link to={`/${employee.id}/editar`}>
                       <Button
                         variant="link"
@@ -64,16 +64,17 @@ export default function EmployeesListComponent() {
   };
 
   return (
-    <Row>
-      <Col xs={12} md={10}>
-        {_renderEmployeesList()}
-      </Col>
-
+    <>
+      <Row>
+        <Col xs={12} md={12}>
+          {_renderEmployeesList()}
+        </Col>
+      </Row>
       <ModalConfirmComponent
         isOpen={isOpenModalConfirm}
         setOnHide={closeModalConfirm}
         employee={employee}
       ></ModalConfirmComponent>
-    </Row>
+    </>
   );
 }
