@@ -2,13 +2,11 @@ import React from "react";
 import { Modal, Button } from "react-bootstrap";
 
 //  REDUX
-import { useDispatch, useSelector } from "react-redux";
-import { openCloseModalConfirmAction } from "../actions/ModalActions";
+import { useDispatch } from "react-redux";
 import { employeeDeleteActions } from "../actions/EmployeesListActions";
 
 export default function ModalConfirmComponent(props) {
   const { employee, isOpen, setOnHide } = props;
-  console.log('Modal Confirm, employee props: \n', employee);
 
   const dispatch = useDispatch();
 

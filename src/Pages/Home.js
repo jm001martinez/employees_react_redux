@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Jumbotron, Spinner } from "react-bootstrap";
+import { Row, Col, Button, Jumbotron } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import EmployeesListComponent from "../Components/EmployeesList";
@@ -16,7 +16,6 @@ export default function Home(props) {
           `https://datos.gob.es/apidata/nti/territory/Province?_sort=label&_pageSize=10&_page=0`
         );
         const json = await res.json();
-        console.log(json);
         setResult(json);
         setLoading(false);
       } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ListGroup, Row, Col, Button } from "react-bootstrap";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import ModalConfirmComponent from "./ModalConfirm";
 import { Link } from "react-router-dom";
 
@@ -30,9 +30,9 @@ export default function EmployeesListComponent() {
                 <Row>
                   <Col xs={8} md={8}>
                     <h5>
-                      {employee.name} <small>{employee.lastname}</small>
+                      {employee.name} {employee.lastname} 
                     </h5>
-                    <small>{employee.email}</small>
+                    <p>{employee.email}, <small className="text-primary">{employee.identification}</small>, <small className="text-info">{employee.inss}</small></p>
                   </Col>
                   <Col xs={4} md={4}>
                     <Link to={`/${employee.id}/editar`}>
@@ -58,6 +58,14 @@ export default function EmployeesListComponent() {
               </ListGroup.Item>
             ))}
           </ListGroup>
+        );
+      } else {
+        return (
+          <Row>
+            <Col xs={8} md={8}>
+              <p className="text-center">No hay datos de empleados</p>
+            </Col>
+          </Row>
         );
       }
     }

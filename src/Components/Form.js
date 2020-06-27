@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Form, Button, Alert } from "react-bootstrap";
-import { v4 as uuid } from "uuid";
 import moment from "moment";
 import MaskedField from "react-masked-field";
 import {
@@ -9,6 +8,7 @@ import {
   isValidEmail,
   isValidInss,
   isValidIdentification,
+  exist,
 } from "../Utils/Validations";
 
 //  REDUX
@@ -22,9 +22,11 @@ import {
   STATUS_ERROR,
   STATUS_SUCCESS,
   UPDATE_MODE_FORM,
+  VERIFY_UNIQUE_ID_VALUE,
+  VERIFY_UNIQUE_EMAIL_VALUE,
+  VERIFY_UNIQUE_INSS_VALUE,
 } from "../Constants/Constants";
-import { openCloseModalAction } from "../actions/ModalActions";
-import { Redirect, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 export default function FormComponent(props) {
   const history = useHistory();
@@ -32,6 +34,8 @@ export default function FormComponent(props) {
 
   const [message, setMessage] = React.useState("");
   const [employeeEdit, setEmployeeEdit] = React.useState(null);
+  const [showAlert, setShowAlert] = React.useState(false);
+  const [editionMode, setEditionMode] = React.useState(false);
 
   const [formValue, setFormaValue] = React.useState({
     name: "",
@@ -44,7 +48,6 @@ export default function FormComponent(props) {
 
   //  Dispatch
   const dispatch = useDispatch();
-
   const employeeCreate = (state) => dispatch(employeesAddActions(state));
   const employeeUpdate = (state) => dispatch(employeeUpdateActions(state));
   const validationsFormError = (state) =>
@@ -57,6 +60,7 @@ export default function FormComponent(props) {
 
   useEffect(() => {
     if (mode === UPDATE_MODE_FORM) {
+      setEditionMode(true);
       const _employee = employees.find((employee) => employee.id == id);
       setEmployeeEdit(_employee);
       setFormaValue({
@@ -75,20 +79,21 @@ export default function FormComponent(props) {
 
     if (mode === UPDATE_MODE_FORM) {
       const data = {
-        id: mode === UPDATE_MODE_FORM ? employeeEdit.id : getId(),
+        id: editionMode ? employeeEdit.id : getId(),
         name: name,
         lastname: lastname,
         email: email,
-        identification: identification,
-        inss: inss,
+        identification: identification.replace(/_/g, ""),
+        inss: inss.replace(/_/g, ""),
         birthday: getBirthDay(identification),
-        created:
-          mode === UPDATE_MODE_FORM
-            ? employeeEdit.created
-            : moment().format("DD/MM/YYYY"),
+        created: editionMode
+          ? employeeEdit.created
+          : moment().format("DD/MM/YYYY"),
       };
 
-      const position = employees.findIndex((employee) => employee.id == id);
+      const position = employees.findIndex(
+        (employee) => employee.id == employeeEdit.id
+      );
       employees.splice(position, 1, data);
       employeeUpdate(employees);
     } else {
@@ -97,14 +102,12 @@ export default function FormComponent(props) {
         name: name,
         lastname: lastname,
         email: email,
-        identification: identification,
-        inss: inss,
+        identification: identification.replace(/_/g, ""),
+        inss: inss.replace(/_/g, ""),
         birthday: getBirthDay(identification),
         created: moment().format("DD/MM-YYYY"),
       };
-      console.log("\n\nEmpleado a editar:\n", employee);
       employeeCreate(employee);
-      history.push("/");
     }
     history.push("/");
   };
@@ -126,26 +129,80 @@ export default function FormComponent(props) {
     const setErrorMessage = (_message, _status) => {
       validationsFormError(_status);
       setMessage(_message);
+      setShowAlert(true);
     };
 
     const { name, lastname, email, identification, inss } = formValue;
-    if (name == "" || lastname == "" || identification == "" || inss == "") {
+    if (
+      name === "" ||
+      lastname === "" ||
+      identification === "" ||
+      inss === ""
+    ) {
       setErrorMessage("Todos los campos son obligatorios.", STATUS_ERROR);
     } else {
-      if (email == "" || !isValidEmail(email)) {
+      if (email === "" || !isValidEmail(email)) {
         setErrorMessage(
           "Verifique si la dirección de correo es válida.",
           STATUS_ERROR
         );
       } else {
-        if (!isValidIdentification(identification)) {
-          setErrorMessage("Ingrese un número de cédula válido.", STATUS_ERROR);
+        if (
+          exist(
+            editionMode ? employeeEdit : formValue,
+            VERIFY_UNIQUE_EMAIL_VALUE,
+            employees,
+            editionMode
+          )
+        ) {
+          setErrorMessage(
+            "El correo que intenta ingresar, ya está registrado.",
+            STATUS_ERROR
+          );
         } else {
-          if (!isValidInss(inss)) {
-            setErrorMessage("ingrese un número inss válido.", STATUS_ERROR);
+          if (!isValidIdentification(identification)) {
+            setErrorMessage(
+              "Ingrese un número de cédula válido.",
+              STATUS_ERROR
+            );
           } else {
-            setErrorMessage("", STATUS_SUCCESS);
-            onSave();
+            if (
+              exist(
+                editionMode ? employeeEdit : formValue,
+                VERIFY_UNIQUE_ID_VALUE,
+                employees,
+                editionMode
+              )
+            ) {
+              setErrorMessage(
+                "El número de cédula que intenta ingresar, ya está registrado.",
+                STATUS_ERROR
+              );
+            } else {
+              if (!isValidInss(inss)) {
+                setErrorMessage("Ingrese un número inss válido.", STATUS_ERROR);
+              } else {
+                if (
+                  exist(
+                    editionMode ? employeeEdit : formValue,
+                    VERIFY_UNIQUE_INSS_VALUE,
+                    employees,
+                    editionMode
+                  )
+                ) {
+                  setErrorMessage(
+                    "El número INSS que intenta ingresar, ya está registrado.",
+                    STATUS_ERROR
+                  );
+                } else {
+                  /**
+                   * validations ready,  save data in storage
+                   */
+                  setErrorMessage("", STATUS_SUCCESS);
+                  onSave();
+                }
+              }
+            }
           }
         }
       }
@@ -159,7 +216,7 @@ export default function FormComponent(props) {
           type="text"
           name="name"
           placeholder="Nombres"
-          value={formValue.name}
+          defaultValue={formValue.name}
         />
       </Form.Group>
 
@@ -168,7 +225,7 @@ export default function FormComponent(props) {
           type="text"
           name="lastname"
           placeholder="Apellidos"
-          value={formValue.lastname}
+          defaultValue={formValue.lastname}
         />
       </Form.Group>
 
@@ -177,7 +234,7 @@ export default function FormComponent(props) {
           type="email"
           name="email"
           placeholder="Correo electrónico"
-          value={formValue.email}
+          defaultValue={formValue.email}
         />
       </Form.Group>
 
@@ -205,8 +262,13 @@ export default function FormComponent(props) {
         Guardar
       </Button>
 
-      {isError && (
-        <Alert variant="danger" className="mt-4">
+      {isError && showAlert && (
+        <Alert
+          variant="danger"
+          className="mt-4"
+          onClose={() => setShowAlert(false)}
+          dismissible
+        >
           {message}
         </Alert>
       )}
